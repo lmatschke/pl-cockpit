@@ -8,6 +8,6 @@
     "types": ["node"],
     "noEmit": true
   },
-  "include": ["server", "shared", "web", "*.config.ts"],
+  "include": ["server", "shared", "web", "e2e", "*.config.ts"],
   "exclude": ["dist", "node_modules"]
 }
