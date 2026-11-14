@@ -2,6 +2,9 @@ import { existsSync } from 'node:fs';
 import Fastify, { type FastifyInstance } from 'fastify';
 import fastifyStatic from '@fastify/static';
 import type { Database } from './db/database.js';
+import { registerErrorHandler } from './http-errors.js';
+import { ProjectRepository } from './modules/core/project-repository.js';
+import { registerProjectRoutes } from './modules/core/project-routes.js';
 
 export interface AppOptions {
   db: Database;
@@ -13,12 +16,15 @@ export interface AppOptions {
 
 export async function buildApp(options: AppOptions): Promise<FastifyInstance> {
   const app = Fastify({ logger: false });
+  registerErrorHandler(app);
 
   app.get('/api/health', async () => ({
     status: 'ok',
     dbPath: options.dbPath,
     schemaVersion: options.schemaVersion,
   }));
+
+  registerProjectRoutes(app, new ProjectRepository(options.db));
 
   const serveWeb = options.webDir !== undefined && existsSync(options.webDir);
   if (serveWeb) {

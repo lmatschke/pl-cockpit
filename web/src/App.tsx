@@ -1,4 +1,5 @@
 import { BrowserRouter, Route, Routes } from 'react-router';
+import { MasterDataPage } from './modules/core/MasterDataPage';
 import { Layout } from './shared/Layout';
 import { PageHeader, Placeholder } from './shared/ui';
 
@@ -61,10 +62,7 @@ export function App() {
               />
             }
           />
-          <Route
-            path="stammdaten"
-            element={<Placeholder title="Stammdaten" description="Projekte und Teams verwalten." />}
-          />
+          <Route path="stammdaten" element={<MasterDataPage />} />
           <Route path="*" element={<NotFound />} />
         </Route>
       </Routes>
