@@ -55,6 +55,14 @@ export function runMigrations(db: Database, dir: string): MigrationResult {
       .map((row) => Number(row.version)),
   );
   const pending = listMigrations(dir).filter((m) => !done.has(m.version));
+  const latestApplied = Math.max(0, ...done);
+  const outOfOrder = pending.find((m) => m.version < latestApplied);
+  if (outOfOrder) {
+    throw new MigrationError(
+      `Migration ${outOfOrder.name} hat eine niedrigere Nummer als die bereits angewendete Version ${latestApplied}. ` +
+        'Neue Migrationen müssen eine höhere Nummer bekommen.',
+    );
+  }
   const applied: string[] = [];
 
   if (pending.length > 0) {

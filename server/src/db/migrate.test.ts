@@ -76,6 +76,20 @@ describe('runMigrations', () => {
     expect(() => runMigrations(db, dir)).toThrow(/doppelt/i);
   });
 
+  it('rejects a pending migration numbered below the latest applied one', () => {
+    migration('001_a.sql', 'CREATE TABLE a (id INTEGER PRIMARY KEY);');
+    migration('003_c.sql', 'CREATE TABLE c (id INTEGER PRIMARY KEY);');
+    const db = openDatabase(':memory:');
+    runMigrations(db, dir);
+
+    migration('002_b.sql', 'CREATE TABLE b (id INTEGER PRIMARY KEY);');
+    migration('004_d.sql', 'CREATE TABLE d (id INTEGER PRIMARY KEY);');
+
+    expect(() => runMigrations(db, dir)).toThrow(MigrationError);
+    expect(() => runMigrations(db, dir)).toThrow(/002_b\.sql.*Version 3/);
+    expect(tableNames(db)).toEqual(['a', 'c', 'schema_migrations']);
+  });
+
   it('treats a missing migrations directory as no migrations', () => {
     const db = openDatabase(':memory:');
     expect(runMigrations(db, path.join(dir, 'missing'))).toEqual({ schemaVersion: 0, applied: [] });

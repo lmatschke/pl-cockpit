@@ -7,6 +7,7 @@ Status: `[ ]` offen · `[~]` in Arbeit · `[x]` erledigt
 - [x] T1: Repo-Grundgerüst mit lauffähigem Hello-World
 - [x] T2: CI auf Linux und Windows
 - [x] T3: Datenbank, Datenablage und Migrations-Runner
+- [x] T3a: Schutz gegen nachträglich eingefügte Migrationen
 - [ ] T4: App-Gerüst mit Navigation
 - [ ] T5: Projekte anlegen und auflisten
 - [ ] T6: Projekte bearbeiten und archivieren

@@ -66,6 +66,12 @@ Größen: S = 1–2 Dateien · M = 3–5 Dateien · (Konfigurationsdateien beim 
 **Verifikation:** `npm test`; manuell: Start mit `PL_COCKPIT_DATA_DIR` auf einen Testordner.
 **Abhängigkeiten:** T1 · **Größe:** M
 
+#### T3a: Schutz gegen nachträglich eingefügte Migrationen
+**Beschreibung:** Eine ausstehende Migration mit niedrigerer Nummer als die höchste bereits angewendete wird abgelehnt (Server startet nicht, verständliche Meldung), statt außer der Reihe ausgeführt zu werden.
+**Akzeptanz:** Unit-Test: 001 + 003 angewendet, 002 kommt hinzu → `MigrationError`, nichts wird angewendet.
+**Verifikation:** `npm test`.
+**Abhängigkeiten:** T3 · **Größe:** XS
+
 #### T4: App-Gerüst mit Navigation
 **Beschreibung:** Layout mit linker Seitenleiste (Start, Projektplanung, Aufgaben, Risiken, Weiterentwicklung, Stammdaten), Routing, Platzhalterseiten „Noch nicht umgesetzt“, Basis-CSS, UI-Grundbausteine (Button, Formularfeld, Tabelle), API-Client mit einheitlicher Fehlerbehandlung, Datumsformat `TT.MM.JJJJ`.
 **Akzeptanz:** Alle Einträge erreichbar; aktiver Eintrag hervorgehoben; Direktaufruf einer Unterseite per URL funktioniert auch über `npm start` (SPA-Fallback).
