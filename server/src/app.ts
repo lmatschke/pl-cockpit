@@ -5,6 +5,8 @@ import type { Database } from './db/database.js';
 import { registerErrorHandler } from './http-errors.js';
 import { ProjectRepository } from './modules/core/project-repository.js';
 import { registerProjectRoutes } from './modules/core/project-routes.js';
+import { TeamRepository } from './modules/core/team-repository.js';
+import { registerTeamRoutes } from './modules/core/team-routes.js';
 
 export interface AppOptions {
   db: Database;
@@ -25,6 +27,7 @@ export async function buildApp(options: AppOptions): Promise<FastifyInstance> {
   }));
 
   registerProjectRoutes(app, new ProjectRepository(options.db));
+  registerTeamRoutes(app, new TeamRepository(options.db));
 
   const serveWeb = options.webDir !== undefined && existsSync(options.webDir);
   if (serveWeb) {

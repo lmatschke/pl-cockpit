@@ -618,3 +618,19 @@ fieldset.field legend {
   clip: rect(0 0 0 0);
   white-space: nowrap;
 }
+
+/* ---------- Inline forms ---------- */
+.inline-form {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.inline-form .field {
+  flex: 1;
+  max-width: 420px;
+}
+
+.team-name {
+  font-weight: 500;
+}

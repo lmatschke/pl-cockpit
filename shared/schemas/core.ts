@@ -43,6 +43,29 @@ export const projectUpdateSchema = projectCreateSchema
   .partial();
 export type ProjectUpdateInput = z.input<typeof projectUpdateSchema>;
 
+export const teamCreateSchema = z.object(
+  {
+    name: z
+      .string({ error: 'Bitte einen Namen eingeben.' })
+      .trim()
+      .min(1, 'Bitte einen Namen eingeben.')
+      .max(80, 'Höchstens 80 Zeichen.'),
+  },
+  { error: 'Ungültige Eingabe.' },
+);
+
+export const teamUpdateSchema = teamCreateSchema
+  .extend({ archived: z.boolean({ error: 'Muss wahr oder falsch sein.' }) })
+  .partial();
+
+export interface Team {
+  id: number;
+  name: string;
+  archived: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
 /** Positive integer id from a URL parameter. */
 export const idParamSchema = z.object({
   id: z.coerce.number({ error: 'Ungültige ID.' }).int('Ungültige ID.').positive('Ungültige ID.'),

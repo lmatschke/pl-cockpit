@@ -96,6 +96,12 @@ Größen: S = 1–2 Dateien · M = 3–5 Dateien · (Konfigurationsdateien beim 
 **Verifikation:** `npm test`; manuell.
 **Abhängigkeiten:** T5 · **Größe:** M
 
+#### T7a: Verständliche Meldung bei belegtem Port
+**Beschreibung:** Startet `npm start`, während PL-Cockpit schon läuft, erscheint statt „EADDRINUSE“ eine deutsche Meldung mit Hinweis.
+**Akzeptanz:** Unit-Test für die Meldung; manuell zweiten Start auslösen.
+**Verifikation:** `npm test`; manuell.
+**Abhängigkeiten:** T3 · **Größe:** XS
+
 #### T8: E2E-Grundlage und Windows-Anleitung
 **Beschreibung:** Playwright einrichten (Server mit temporärem `PL_COCKPIT_DATA_DIR`), E2E-Abläufe aus SPEC-core, `npm run test:e2e`. `docs/setup-windows.md` schreiben.
 **Akzeptanz:** Die drei E2E-Abläufe aus SPEC-core sind grün; die Anleitung hat ≤ 10 Schritte inkl. Backup und Update.
