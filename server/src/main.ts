@@ -4,6 +4,7 @@ import { buildApp } from './app.js';
 import { openDatabase } from './db/database.js';
 import { DB_FILE_NAME, resolveDataDir } from './db/data-dir.js';
 import { runMigrations } from './db/migrate.js';
+import { startupErrorMessage } from './startup-error.js';
 
 const HOST = '127.0.0.1';
 const port = Number(process.env.PL_COCKPIT_PORT ?? 5179);
@@ -33,6 +34,6 @@ try {
   console.log(`PL-Cockpit läuft auf http://${HOST}:${port}`);
 } catch (err) {
   console.error('PL-Cockpit konnte nicht gestartet werden:');
-  console.error(err instanceof Error ? err.message : err);
+  console.error(startupErrorMessage(err, port));
   process.exit(1);
 }
