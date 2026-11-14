@@ -1,21 +1,73 @@
-import { useEffect, useState } from 'react';
+import { BrowserRouter, Route, Routes } from 'react-router';
+import { Layout } from './shared/Layout';
+import { PageHeader, Placeholder } from './shared/ui';
 
-type ApiState = 'loading' | 'ok' | 'error';
+function NotFound() {
+  return (
+    <>
+      <PageHeader title="Seite nicht gefunden" />
+      <p>Diese Seite gibt es nicht. Nutze die Navigation links.</p>
+    </>
+  );
+}
 
 export function App() {
-  const [api, setApi] = useState<ApiState>('loading');
-
-  useEffect(() => {
-    fetch('/api/health')
-      .then((res) => (res.ok ? res.json() : Promise.reject(new Error(String(res.status)))))
-      .then((body: { status: string }) => setApi(body.status === 'ok' ? 'ok' : 'error'))
-      .catch(() => setApi('error'));
-  }, []);
-
   return (
-    <main style={{ fontFamily: 'system-ui, sans-serif', padding: '2rem' }}>
-      <h1>PL-Cockpit</h1>
-      <p>API: {api === 'loading' ? 'wird geprüft …' : api === 'ok' ? 'ok' : 'nicht erreichbar'}</p>
-    </main>
+    <BrowserRouter>
+      <Routes>
+        <Route element={<Layout />}>
+          <Route
+            index
+            element={
+              <Placeholder
+                title="Start"
+                description="Hier erscheinen bald deine Aufgaben für heute und diese Woche sowie fällige Liefertermine der Teams."
+              />
+            }
+          />
+          <Route
+            path="planung"
+            element={
+              <Placeholder
+                title="Projektplanung"
+                description="Anforderungen, Phasen je Team, Zeitleiste und Teamgespräch."
+              />
+            }
+          />
+          <Route
+            path="aufgaben"
+            element={
+              <Placeholder
+                title="Aufgaben"
+                description="Wiederkehrende und einmalige PL-Aufgaben."
+              />
+            }
+          />
+          <Route
+            path="risiken"
+            element={
+              <Placeholder
+                title="Risiken"
+                description="Risikoregister je Projekt mit geführtem Review."
+              />
+            }
+          />
+          <Route
+            path="weiterentwicklung"
+            element={
+              <Placeholder
+                title="Weiterentwicklung"
+                description="Entwicklungsstand des PL-Cockpits, direkt aus dem Repository gelesen."
+              />
+            }
+          />
+          <Route
+            path="stammdaten"
+            element={<Placeholder title="Stammdaten" description="Projekte und Teams verwalten." />}
+          />
+          <Route path="*" element={<NotFound />} />
+        </Route>
+      </Routes>
+    </BrowserRouter>
   );
 }
