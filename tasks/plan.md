@@ -108,6 +108,12 @@ Größen: S = 1–2 Dateien · M = 3–5 Dateien · (Konfigurationsdateien beim 
 **Verifikation:** `npm run test:e2e`.
 **Abhängigkeiten:** T6, T7 · **Größe:** M
 
+#### T8a: Sicherheits-Härtung
+**Beschreibung:** Befunde aus dem Security-Audit vom 2026-11-14 beheben: Host-Prüfung gegen DNS-Rebinding (nur `127.0.0.1`/`localhost`, sonst 421), schreibende Anfragen mit fremdem `Origin` ablehnen (403), nur JSON-Bodies annehmen (`text/plain`-Parser entfernt → 415), Sicherheits-Header (CSP, `X-Frame-Options`, `nosniff`, `Referrer-Policy`), `dbPath` aus `/api/health` entfernen, `.gitignore` ergänzen, CI-Rechte auf `contents: read`, Anleitung auf `npm ci`.
+**Akzeptanz:** API-Tests für 421/403/415, Header und Health ohne `dbPath`; E2E weiterhin grün (CSP bricht die Oberfläche nicht).
+**Verifikation:** `npm run check`, `npm run test:e2e`.
+**Abhängigkeiten:** T8 · **Größe:** S
+
 #### C1: Checkpoint core
 - `npm run check` und `npm run test:e2e` grün; CI grün (falls Repo auf GitHub).
 - **Windows-Probelauf** (empfohlen, kostet keine Kiro-Credits): auf dem Firmenrechner klonen → `npm install` → `npm start`.

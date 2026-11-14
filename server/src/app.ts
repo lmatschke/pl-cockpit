@@ -3,6 +3,7 @@ import Fastify, { type FastifyInstance } from 'fastify';
 import fastifyStatic from '@fastify/static';
 import type { Database } from './db/database.js';
 import { registerErrorHandler } from './http-errors.js';
+import { registerSecurity } from './security.js';
 import { ProjectRepository } from './modules/core/project-repository.js';
 import { registerProjectRoutes } from './modules/core/project-routes.js';
 import { TeamRepository } from './modules/core/team-repository.js';
@@ -10,7 +11,6 @@ import { registerTeamRoutes } from './modules/core/team-routes.js';
 
 export interface AppOptions {
   db: Database;
-  dbPath: string;
   schemaVersion: number;
   /** Directory of the built frontend; served when it exists. */
   webDir?: string;
@@ -19,10 +19,10 @@ export interface AppOptions {
 export async function buildApp(options: AppOptions): Promise<FastifyInstance> {
   const app = Fastify({ logger: false });
   registerErrorHandler(app);
+  registerSecurity(app);
 
   app.get('/api/health', async () => ({
     status: 'ok',
-    dbPath: options.dbPath,
     schemaVersion: options.schemaVersion,
   }));
 

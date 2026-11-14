@@ -9,3 +9,12 @@ playwright-report/
 test-results/
 .DS_Store
 .env
+# Never commit data or backups (customer data)
+*.sqlite
+*.sqlite3
+*.db.*
+*.bak
+/data/
+.env.*
+blob-report/
+playwright/.cache/

@@ -15,7 +15,7 @@ Firmenrichtlinie).
      `git clone https://github.com/lmatschke/pl-cockpit.git` und dann `cd pl-cockpit`
    - **Als ZIP:** auf GitHub „Code → Download ZIP“, entpacken (z. B. nach
      `C:\Users\<du>\pl-cockpit`) und in PowerShell in diesen Ordner wechseln (`cd …`).
-4. **Abhängigkeiten installieren:** `npm install` (dauert beim ersten Mal 1–2 Minuten).
+4. **Abhängigkeiten installieren:** `npm ci` (installiert exakt die geprüften Versionen aus `package-lock.json`; dauert beim ersten Mal 1–2 Minuten).
 
 ## Starten
 
@@ -36,8 +36,8 @@ Firmenrichtlinie).
 ## Update auf eine neue Version
 
 8. PL-Cockpit beenden (Strg+C), dann:
-   - **Mit Git:** `git pull` und danach `npm install`
-   - **Mit ZIP:** neues ZIP entpacken (alten Code-Ordner ersetzen), dann `npm install`
+   - **Mit Git:** `git pull` und danach `npm ci`
+   - **Mit ZIP:** neues ZIP entpacken (alten Code-Ordner ersetzen), dann `npm ci`
 9. `npm start` – neue Datenbank-Änderungen werden beim Start automatisch angewendet, deine Daten
    bleiben erhalten.
 
@@ -47,7 +47,7 @@ Firmenrichtlinie).
 |---|---|
 | `npm : Die Datei …\npm.ps1 kann nicht geladen werden, da die Ausführung von Skripts auf diesem System deaktiviert ist` | PowerShell blockiert Skripte. Entweder statt PowerShell die **Eingabeaufforderung (cmd)** verwenden, oder einmalig `Set-ExecutionPolicy -Scope CurrentUser RemoteSigned` ausführen (falls die Firmenrichtlinie es erlaubt). |
 | `Port 5179 ist bereits belegt …` | PL-Cockpit läuft schon in einem anderen Fenster – dort weiterverwenden oder mit Strg+C beenden. |
-| `npm install` hängt oder meldet `ETIMEDOUT` / `ECONNREFUSED` | Firmen-Proxy. Proxy-Adresse bei der IT erfragen und setzen: `npm config set proxy http://proxy:port` und `npm config set https-proxy http://proxy:port` |
+| `npm ci` hängt oder meldet `ETIMEDOUT` / `ECONNREFUSED` | Firmen-Proxy. Proxy-Adresse bei der IT erfragen und setzen: `npm config set proxy http://proxy:port` und `npm config set https-proxy http://proxy:port` |
 | `node` wird nicht gefunden | Nach der Node-Installation ein **neues** PowerShell-Fenster öffnen. |
 | Browser zeigt „Server nicht erreichbar“ | Das PowerShell-Fenster mit `npm start` wurde geschlossen – neu starten (Schritt 5). |
 

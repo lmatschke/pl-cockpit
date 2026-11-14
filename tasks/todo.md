@@ -14,6 +14,7 @@ Status: `[ ]` offen · `[~]` in Arbeit · `[x]` erledigt
 - [x] T7: Teams verwalten
 - [x] T7a: Verständliche Meldung bei belegtem Port
 - [x] T8: E2E-Grundlage und Windows-Anleitung
+- [x] T8a: Sicherheits-Härtung
 - [ ] C1: Checkpoint core (inkl. Windows-Probelauf)
 
 ## devstatus – Weiterentwicklung

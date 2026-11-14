@@ -15,6 +15,6 @@ export function createTestDb(): Database {
 /** App instance backed by a fresh in-memory database. */
 export async function createTestApp() {
   const db = createTestDb();
-  const app = await buildApp({ db, dbPath: ':memory:', schemaVersion: 1 });
+  const app = await buildApp({ db, schemaVersion: 1 });
   return { app, db };
 }

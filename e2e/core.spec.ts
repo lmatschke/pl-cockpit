@@ -4,6 +4,13 @@ import { expect, test } from '@playwright/test';
 const uid = () => Math.random().toString(36).slice(2, 7);
 
 test('navigate through all sidebar entries', async ({ page }) => {
+  // Catches Content-Security-Policy violations and other runtime errors.
+  const consoleErrors: string[] = [];
+  page.on('console', (msg) => {
+    if (msg.type() === 'error') consoleErrors.push(msg.text());
+  });
+  page.on('pageerror', (err) => consoleErrors.push(err.message));
+
   await page.goto('/');
   const nav = page.getByRole('navigation', { name: 'Hauptnavigation' });
   const entries = [
@@ -20,6 +27,7 @@ test('navigate through all sidebar entries', async ({ page }) => {
     await expect(page.getByRole('heading', { level: 1, name: heading })).toBeVisible();
   }
   await expect(page.getByText('Verbunden')).toBeVisible();
+  expect(consoleErrors).toEqual([]);
 });
 
 test('deep link survives a reload', async ({ page }) => {

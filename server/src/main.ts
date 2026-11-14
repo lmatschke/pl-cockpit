@@ -22,7 +22,6 @@ try {
 
   const app = await buildApp({
     db,
-    dbPath,
     schemaVersion,
     webDir: path.join(appRoot, 'dist', 'web'),
   });

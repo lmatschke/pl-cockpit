@@ -22,7 +22,12 @@ auf die sich Planung, Aufgaben und Risiken beziehen.
 - Öffnet bzw. erstellt die DB-Datei am Speicherort aus [SPEC.md](SPEC.md#datenablage); legt den Ordner bei Bedarf an.
 - Beim Start werden alle ausstehenden nummerierten Migrationen aus `server/migrations/` in einer Transaktion angewendet, protokolliert in der Tabelle `schema_migrations`.
 - Fremdschlüssel sind aktiviert.
-- `GET /api/health` liefert `{ status: "ok", dbPath, schemaVersion }`.
+- `GET /api/health` liefert `{ status: "ok", schemaVersion }`. Der DB-Pfad steht nur im Startlog (enthält den Benutzernamen).
+
+### Sicherheit (lokaler Server)
+- Anfragen werden nur angenommen, wenn der `Host`-Header `127.0.0.1` oder `localhost` lautet (Schutz gegen DNS-Rebinding), sonst 421.
+- Schreibende Anfragen (alles außer GET/HEAD) mit `Origin` einer fremden Seite werden mit 403 abgelehnt; Request-Bodies nur als `application/json` (sonst 415).
+- Alle Antworten tragen `Content-Security-Policy` (nur eigene Quellen, kein Einbetten), `X-Frame-Options: DENY`, `X-Content-Type-Options: nosniff`, `Referrer-Policy: no-referrer`.
 
 ### Stammdaten: Projekte
 
