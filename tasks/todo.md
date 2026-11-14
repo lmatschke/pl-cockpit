@@ -4,7 +4,7 @@ Details, Akzeptanzkriterien und Abhängigkeiten: [plan.md](plan.md)
 Status: `[ ]` offen · `[~]` in Arbeit · `[x]` erledigt
 
 ## core – Grundlage
-- [ ] T1: Repo-Grundgerüst mit lauffähigem Hello-World
+- [x] T1: Repo-Grundgerüst mit lauffähigem Hello-World
 - [ ] T2: CI auf Linux und Windows
 - [ ] T3: Datenbank, Datenablage und Migrations-Runner
 - [ ] T4: App-Gerüst mit Navigation
