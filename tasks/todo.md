@@ -10,7 +10,7 @@ Status: `[ ]` offen · `[~]` in Arbeit · `[x]` erledigt
 - [x] T3a: Schutz gegen nachträglich eingefügte Migrationen
 - [x] T4: App-Gerüst mit Navigation
 - [x] T5: Projekte anlegen und auflisten
-- [ ] T6: Projekte bearbeiten und archivieren
+- [x] T6: Projekte bearbeiten und archivieren
 - [ ] T7: Teams verwalten
 - [ ] T8: E2E-Grundlage und Windows-Anleitung
 - [ ] C1: Checkpoint core (inkl. Windows-Probelauf)

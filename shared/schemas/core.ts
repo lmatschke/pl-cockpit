@@ -38,6 +38,16 @@ export const projectCreateSchema = z.object(
 );
 export type ProjectCreateInput = z.input<typeof projectCreateSchema>;
 
+export const projectUpdateSchema = projectCreateSchema
+  .extend({ archived: z.boolean({ error: 'Muss wahr oder falsch sein.' }) })
+  .partial();
+export type ProjectUpdateInput = z.input<typeof projectUpdateSchema>;
+
+/** Positive integer id from a URL parameter. */
+export const idParamSchema = z.object({
+  id: z.coerce.number({ error: 'Ungültige ID.' }).int('Ungültige ID.').positive('Ungültige ID.'),
+});
+
 export const archivedFilterSchema = z.enum(['false', 'true', 'all']).default('false');
 export type ArchivedFilter = z.infer<typeof archivedFilterSchema>;
 

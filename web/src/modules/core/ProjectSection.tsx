@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState, type FormEvent } from 'react';
 import { PROJECT_COLORS, type Project } from '../../../../shared/schemas/core';
 import { formatDate } from '../../../../shared/date';
 import { api, ApiError } from '../../shared/api';
-import { Button, TextField } from '../../shared/ui';
+import { Button, SegmentedControl, TextField } from '../../shared/ui';
 
 interface FormState {
   name: string;
@@ -11,22 +11,45 @@ interface FormState {
   description: string;
 }
 
-const EMPTY_FORM: FormState = { name: '', shortName: '', color: '', description: '' };
+type View = 'active' | 'archived';
 
-function ProjectForm({ onSaved, onCancel }: { onSaved: () => void; onCancel: () => void }) {
-  const [form, setForm] = useState<FormState>(EMPTY_FORM);
+function toForm(project?: Project): FormState {
+  return {
+    name: project?.name ?? '',
+    shortName: project?.shortName ?? '',
+    color: project?.color ?? '',
+    description: project?.description ?? '',
+  };
+}
+
+function ProjectForm({
+  project,
+  onSaved,
+  onCancel,
+}: {
+  project?: Project;
+  onSaved: () => void;
+  onCancel: () => void;
+}) {
+  const isEdit = project !== undefined;
+  const [form, setForm] = useState<FormState>(() => toForm(project));
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [saving, setSaving] = useState(false);
 
   const set = (key: keyof FormState) => (value: string) => setForm((f) => ({ ...f, [key]: value }));
+  const colors =
+    isEdit && !PROJECT_COLORS.includes(form.color as never)
+      ? [...PROJECT_COLORS, form.color]
+      : PROJECT_COLORS;
 
   async function submit(e: FormEvent) {
     e.preventDefault();
     setSaving(true);
     setErrors({});
+    const body = { ...form, color: form.color || undefined };
     try {
-      await api.post<Project>('/api/projects', { ...form, color: form.color || undefined });
-      setForm(EMPTY_FORM);
+      if (isEdit) await api.patch<Project>(`/api/projects/${project.id}`, body);
+      else await api.post<Project>('/api/projects', body);
       onSaved();
     } catch (err) {
       if (err instanceof ApiError) {
@@ -39,7 +62,7 @@ function ProjectForm({ onSaved, onCancel }: { onSaved: () => void; onCancel: () 
 
   return (
     <form className="card form-card" onSubmit={submit} noValidate>
-      <h2>Neues Projekt</h2>
+      <h2>{isEdit ? 'Projekt bearbeiten' : 'Neues Projekt'}</h2>
       <div className="form-grid">
         <TextField
           label="Name"
@@ -61,16 +84,18 @@ function ProjectForm({ onSaved, onCancel }: { onSaved: () => void; onCancel: () 
       <fieldset className="field color-field">
         <legend>Farbe</legend>
         <div className="swatches">
-          <label className="swatch swatch-auto" title="Automatisch">
-            <input
-              type="radio"
-              name="color"
-              checked={form.color === ''}
-              onChange={() => set('color')('')}
-            />
-            <span>Auto</span>
-          </label>
-          {PROJECT_COLORS.map((c) => (
+          {!isEdit ? (
+            <label className="swatch swatch-auto" title="Automatisch">
+              <input
+                type="radio"
+                name="color"
+                checked={form.color === ''}
+                onChange={() => set('color')('')}
+              />
+              <span>Auto</span>
+            </label>
+          ) : null}
+          {colors.map((c) => (
             <label key={c} className="swatch" title={c}>
               <input
                 type="radio"
@@ -101,21 +126,28 @@ function ProjectForm({ onSaved, onCancel }: { onSaved: () => void; onCancel: () 
           Abbrechen
         </Button>
         <Button variant="primary" type="submit" disabled={saving}>
-          {saving ? 'Speichert …' : 'Projekt anlegen'}
+          {saving ? 'Speichert …' : isEdit ? 'Speichern' : 'Projekt anlegen'}
         </Button>
       </div>
     </form>
   );
 }
 
+interface Notice {
+  text: string;
+  undo?: () => void;
+}
+
 export function ProjectSection() {
+  const [view, setView] = useState<View>('active');
   const [projects, setProjects] = useState<Project[] | null>(null);
   const [loadError, setLoadError] = useState<string | null>(null);
-  const [showForm, setShowForm] = useState(false);
+  const [editing, setEditing] = useState<Project | 'new' | null>(null);
+  const [notice, setNotice] = useState<Notice | null>(null);
 
   const load = useCallback(() => {
     api
-      .get<Project[]>('/api/projects')
+      .get<Project[]>(`/api/projects?archived=${view === 'archived'}`)
       .then((list) => {
         setProjects(list);
         setLoadError(null);
@@ -123,37 +155,92 @@ export function ProjectSection() {
       .catch((err: unknown) =>
         setLoadError(err instanceof Error ? err.message : 'Fehler beim Laden.'),
       );
-  }, []);
+  }, [view]);
 
   useEffect(load, [load]);
+
+  async function setArchived(project: Project, archived: boolean) {
+    try {
+      await api.patch<Project>(`/api/projects/${project.id}`, { archived });
+      setNotice({
+        text: archived
+          ? `„${project.name}“ wurde archiviert.`
+          : `„${project.name}“ ist wieder aktiv.`,
+        undo: () => void setArchived(project, !archived),
+      });
+      load();
+    } catch (err) {
+      setNotice({ text: err instanceof Error ? err.message : 'Aktion fehlgeschlagen.' });
+    }
+  }
 
   return (
     <section className="section" aria-labelledby="projects-heading">
       <div className="section-header">
-        <h2 id="projects-heading">Projekte</h2>
-        {!showForm ? (
-          <Button variant="primary" onClick={() => setShowForm(true)}>
+        <div className="section-title">
+          <h2 id="projects-heading">Projekte</h2>
+          <SegmentedControl
+            label="Projekte filtern"
+            value={view}
+            onChange={(v) => {
+              setView(v);
+              setNotice(null);
+            }}
+            options={[
+              { value: 'active', label: 'Aktiv' },
+              { value: 'archived', label: 'Archiviert' },
+            ]}
+          />
+        </div>
+        {editing === null ? (
+          <Button variant="primary" onClick={() => setEditing('new')}>
             Neues Projekt
           </Button>
         ) : null}
       </div>
 
-      {showForm ? (
+      {editing !== null ? (
         <ProjectForm
+          key={editing === 'new' ? 'new' : editing.id}
+          project={editing === 'new' ? undefined : editing}
           onSaved={() => {
-            setShowForm(false);
+            setEditing(null);
             load();
           }}
-          onCancel={() => setShowForm(false)}
+          onCancel={() => setEditing(null)}
         />
+      ) : null}
+
+      {notice ? (
+        <div className="notice" role="status">
+          <span>{notice.text}</span>
+          {notice.undo ? (
+            <Button
+              variant="ghost"
+              onClick={() => {
+                const undo = notice.undo!;
+                setNotice(null);
+                undo();
+              }}
+            >
+              Rückgängig
+            </Button>
+          ) : null}
+        </div>
       ) : null}
 
       {loadError ? <p className="alert alert-error">{loadError}</p> : null}
 
       {projects && projects.length === 0 ? (
         <div className="empty-state">
-          <p className="empty-title">Noch keine Projekte</p>
-          <p>Lege dein erstes Projekt an, um Anforderungen und Risiken zuordnen zu können.</p>
+          {view === 'active' ? (
+            <>
+              <p className="empty-title">Noch keine Projekte</p>
+              <p>Lege dein erstes Projekt an, um Anforderungen und Risiken zuordnen zu können.</p>
+            </>
+          ) : (
+            <p className="empty-title">Keine archivierten Projekte</p>
+          )}
         </div>
       ) : null}
 
@@ -166,6 +253,9 @@ export function ProjectSection() {
                 <th>Kürzel</th>
                 <th>Beschreibung</th>
                 <th>Angelegt</th>
+                <th>
+                  <span className="visually-hidden">Aktionen</span>
+                </th>
               </tr>
             </thead>
             <tbody>
@@ -184,6 +274,34 @@ export function ProjectSection() {
                   <td>{p.shortName ? <span className="tag">{p.shortName}</span> : null}</td>
                   <td className="cell-muted cell-truncate">{p.description}</td>
                   <td className="cell-muted">{formatDate(p.createdAt)}</td>
+                  <td className="cell-actions">
+                    {view === 'active' ? (
+                      <>
+                        <Button
+                          variant="ghost"
+                          onClick={() => setEditing(p)}
+                          aria-label={`${p.name} bearbeiten`}
+                        >
+                          Bearbeiten
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          onClick={() => void setArchived(p, true)}
+                          aria-label={`${p.name} archivieren`}
+                        >
+                          Archivieren
+                        </Button>
+                      </>
+                    ) : (
+                      <Button
+                        variant="ghost"
+                        onClick={() => void setArchived(p, false)}
+                        aria-label={`${p.name} wiederherstellen`}
+                      >
+                        Wiederherstellen
+                      </Button>
+                    )}
+                  </td>
                 </tr>
               ))}
             </tbody>

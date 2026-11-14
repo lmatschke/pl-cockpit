@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import { PROJECT_COLORS } from '../../../../shared/schemas/core.js';
-import { ConflictError } from '../../http-errors.js';
+import { ConflictError, NotFoundError } from '../../http-errors.js';
 import { createTestDb } from '../../test-utils.js';
 import { ProjectRepository } from './project-repository.js';
 
@@ -51,5 +51,54 @@ describe('ProjectRepository', () => {
       'Billing',
       'Zeiterfassung',
     ]);
+  });
+});
+
+describe('ProjectRepository.update', () => {
+  it('changes only the given fields and bumps updatedAt', async () => {
+    const p = repo.create({ name: 'CRM', shortName: 'CRM', description: 'Alt' });
+    await new Promise((r) => setTimeout(r, 5));
+
+    const u = repo.update(p.id, { description: 'Neu' });
+
+    expect(u).toMatchObject({ name: 'CRM', shortName: 'CRM', description: 'Neu', color: p.color });
+    expect(u.updatedAt > p.updatedAt).toBe(true);
+    expect(u.createdAt).toBe(p.createdAt);
+  });
+
+  it('clears optional fields when given an empty string or null', () => {
+    const p = repo.create({ name: 'CRM', shortName: 'CRM', description: 'Alt' });
+    expect(repo.update(p.id, { shortName: '', description: null })).toMatchObject({
+      shortName: null,
+      description: null,
+    });
+  });
+
+  it('allows renaming a project to a different case of its own name', () => {
+    const p = repo.create({ name: 'crm' });
+    expect(repo.update(p.id, { name: 'CRM' }).name).toBe('CRM');
+  });
+
+  it('rejects renaming to the name of another project', () => {
+    repo.create({ name: 'A' });
+    const b = repo.create({ name: 'B' });
+    expect(() => repo.update(b.id, { name: 'a' })).toThrow(ConflictError);
+  });
+
+  it('archives and unarchives', () => {
+    const p = repo.create({ name: 'A' });
+    repo.create({ name: 'B' });
+
+    repo.update(p.id, { archived: true });
+    expect(repo.list({ archived: 'false' }).map((x) => x.name)).toEqual(['B']);
+    expect(repo.list({ archived: 'true' }).map((x) => x.name)).toEqual(['A']);
+    expect(repo.list({ archived: 'all' })).toHaveLength(2);
+
+    repo.update(p.id, { archived: false });
+    expect(repo.list({ archived: 'false' })).toHaveLength(2);
+  });
+
+  it('throws NotFoundError for an unknown id', () => {
+    expect(() => repo.update(999, { name: 'X' })).toThrow(NotFoundError);
   });
 });

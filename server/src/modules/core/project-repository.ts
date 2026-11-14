@@ -2,11 +2,12 @@ import {
   PROJECT_COLORS,
   nameKey,
   projectCreateSchema,
+  projectUpdateSchema,
   type ArchivedFilter,
   type Project,
 } from '../../../../shared/schemas/core.js';
 import type { Database } from '../../db/database.js';
-import { ConflictError } from '../../http-errors.js';
+import { ConflictError, NotFoundError } from '../../http-errors.js';
 
 interface ProjectRow {
   id: number;
@@ -66,6 +67,31 @@ export class ProjectRepository {
       )
       .run(data.name, nameKey(data.name), data.shortName, color, data.description, now, now);
     return this.get(Number(result.lastInsertRowid))!;
+  }
+
+  /** Validates and applies a partial update; only given fields change. */
+  update(id: number, input: unknown): Project {
+    const data = projectUpdateSchema.parse(input);
+    const current = this.get(id);
+    if (!current) throw new NotFoundError('Projekt nicht gefunden.');
+    if (data.name !== undefined) this.assertNameFree(data.name, id);
+
+    const columns: Record<string, string | number | null> = {};
+    if (data.name !== undefined) {
+      columns.name = data.name;
+      columns.name_key = nameKey(data.name);
+    }
+    if (data.shortName !== undefined) columns.short_name = data.shortName;
+    if (data.color !== undefined) columns.color = data.color;
+    if (data.description !== undefined) columns.description = data.description;
+    if (data.archived !== undefined) columns.archived = data.archived ? 1 : 0;
+    columns.updated_at = new Date().toISOString();
+
+    const assignments = Object.keys(columns).map((c) => `${c} = ?`);
+    this.db
+      .prepare(`UPDATE projects SET ${assignments.join(', ')} WHERE id = ?`)
+      .run(...Object.values(columns), id);
+    return this.get(id)!;
   }
 
   private assertNameFree(name: string, exceptId?: number) {

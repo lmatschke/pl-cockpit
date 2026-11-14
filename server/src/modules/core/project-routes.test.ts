@@ -70,3 +70,50 @@ describe('GET /api/projects', () => {
     expect(res.statusCode).toBe(400);
   });
 });
+
+describe('PATCH /api/projects/:id', () => {
+  function patch(id: number | string, body: unknown) {
+    return app.inject({ method: 'PATCH', url: `/api/projects/${id}`, payload: body as object });
+  }
+
+  it('updates and returns the project', async () => {
+    const { id } = (await post({ name: 'CRM' })).json();
+    const res = await patch(id, { name: 'CRM Release 3', archived: true });
+
+    expect(res.statusCode).toBe(200);
+    expect(res.json()).toMatchObject({ id, name: 'CRM Release 3', archived: true });
+  });
+
+  it('returns 404 for an unknown id', async () => {
+    const res = await patch(999, { name: 'X' });
+    expect(res.statusCode).toBe(404);
+    expect(res.json().message).toMatch(/nicht gefunden/i);
+  });
+
+  it('returns 400 for a non-numeric id', async () => {
+    expect((await patch('abc', { name: 'X' })).statusCode).toBe(400);
+  });
+
+  it('returns 400 for invalid fields', async () => {
+    const { id } = (await post({ name: 'CRM' })).json();
+    const res = await patch(id, { name: '', archived: 'ja' });
+
+    expect(res.statusCode).toBe(400);
+    expect(Object.keys(res.json().fields).sort()).toEqual(['archived', 'name']);
+  });
+
+  it('lists archived projects only with the matching filter', async () => {
+    const { id } = (await post({ name: 'Alt' })).json();
+    await post({ name: 'Neu' });
+    await patch(id, { archived: true });
+
+    const names = async (q: string) =>
+      (await app.inject({ method: 'GET', url: `/api/projects${q}` }))
+        .json()
+        .map((p: { name: string }) => p.name);
+
+    expect(await names('')).toEqual(['Neu']);
+    expect(await names('?archived=true')).toEqual(['Alt']);
+    expect(await names('?archived=all')).toEqual(['Alt', 'Neu']);
+  });
+});
